@@ -25,6 +25,8 @@ override_dh_auto_configure:
 		--enable-geoip \
 		$(extra_confflags)
 
+override_dh_auto_test:
+	# broken in wheezy
 
 override_dh_installinit:
 	dh_installinit --name pmacctd --no-start
