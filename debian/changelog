@@ -1,3 +1,15 @@
+pmacct (1.5.0-2~bpo70+1) wheezy-backports; urgency=medium
+
+  * Rebuild for wheezy-backports.
+  * [e9cf7671] Add Homepage and Vcs information.
+  * [c39d8db8] Add gbp.conf for backports.
+  * [8a59670f] Disable rabbitmq support.
+    librabbitmq-dev is too old in wheezy.
+  * [4d38edf1] Disable dh_auto_test in wheezy.
+    Broken due to broken automake-foo.
+
+ -- Bernd Zeimetz <bernd@bzed.de>  Sat, 01 Nov 2014 20:51:09 +0100
+
 pmacct (1.5.0-2) unstable; urgency=medium
 
   * [5ede5bde] Build with ulog support on linux only.
