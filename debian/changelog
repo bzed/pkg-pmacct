@@ -1,3 +1,10 @@
+pmacct (1.5.0-2~bpo70+2) wheezy-backports; urgency=medium
+
+  * [834295a3] Fix dpkg dependency for easy backporting.
+  * [73a52fee] Add ${misc:Depends} to Depends.
+
+ -- Bernd Zeimetz <bzed@debian.org>  Wed, 05 Nov 2014 18:28:36 +0100
+
 pmacct (1.5.0-2~bpo70+1) wheezy-backports; urgency=medium
 
   * Rebuild for wheezy-backports.
