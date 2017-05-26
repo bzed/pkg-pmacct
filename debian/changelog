@@ -1,3 +1,10 @@
+pmacct (1.6.1-1~bpo8+1) jessie-backports; urgency=medium
+
+  * Rebuild for jessie-backports.
+    - Depend on libmysqlclient-dev instead of default-libmysqlclient-dev.
+
+ -- Faidon Liambotis <paravoid@debian.org>  Fri, 26 May 2017 12:52:56 +0000
+
 pmacct (1.6.1-1) unstable; urgency=medium
 
   * [0497b6e] Merge tag 'upstream/1.6.1'
