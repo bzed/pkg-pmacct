@@ -52,10 +52,9 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-sbin_PROGRAMS = pmacctd$(EXEEXT) nfacctd$(EXEEXT) sfacctd$(EXEEXT) \
-	pmtelemetryd$(EXEEXT) pmbgpd$(EXEEXT) pmbmpd$(EXEEXT) \
-	$(am__EXEEXT_1)
-bin_PROGRAMS = pmacct$(EXEEXT) @EXTRABIN@
+sbin_PROGRAMS = $(am__EXEEXT_2) $(am__EXEEXT_3) $(am__EXEEXT_4) \
+	$(am__EXEEXT_5) $(am__EXEEXT_6)
+bin_PROGRAMS = $(am__EXEEXT_1)
 EXTRA_PROGRAMS =
 @WITH_MYSQL_TRUE@am__append_1 = mysql_plugin.c mysql_plugin.h
 @WITH_MYSQL_TRUE@am__append_2 = @MYSQL_LIBS@
@@ -69,16 +68,23 @@ EXTRA_PROGRAMS =
 @WITH_SQLITE3_TRUE@am__append_10 = sqlite3_plugin.c sqlite3_plugin.c
 @WITH_SQLITE3_TRUE@am__append_11 = @SQLITE3_LIBS@
 @WITH_SQLITE3_TRUE@am__append_12 = @SQLITE3_CFLAGS@
-@WITH_RABBITMQ_TRUE@am__append_13 = amqp_common.c amqp_common.h amqp_plugin.c amqp_plugin.h
-@WITH_RABBITMQ_TRUE@am__append_14 = @RABBITMQ_LIBS@
-@WITH_RABBITMQ_TRUE@am__append_15 = @RABBITMQ_CFLAGS@
-@WITH_KAFKA_TRUE@am__append_16 = kafka_common.c kafka_common.h kafka_plugin.c kafka_plugin.h
-@WITH_KAFKA_TRUE@am__append_17 = @KAFKA_LIBS@
-@WITH_KAFKA_TRUE@am__append_18 = @KAFKA_CFLAGS@
-@USING_SQL_TRUE@am__append_19 = sql_common.c sql_handlers.c sql_common.h
-@USING_SQL_TRUE@am__append_20 = -lm -lz
-@USING_THREADPOOL_TRUE@am__append_21 = thread_pool.c thread_pool.h
-@WITH_NFLOG_TRUE@am__append_22 = uacctd
+@WITH_AVRO_TRUE@am__append_13 = @AVRO_LIBS@
+@WITH_AVRO_TRUE@am__append_14 = @AVRO_CFLAGS@
+@WITH_RABBITMQ_TRUE@am__append_15 = amqp_common.c amqp_common.h amqp_plugin.c amqp_plugin.h
+@WITH_RABBITMQ_TRUE@am__append_16 = @RABBITMQ_LIBS@
+@WITH_RABBITMQ_TRUE@am__append_17 = @RABBITMQ_CFLAGS@
+@WITH_KAFKA_TRUE@am__append_18 = kafka_common.c kafka_common.h kafka_plugin.c kafka_plugin.h
+@WITH_KAFKA_TRUE@am__append_19 = @KAFKA_LIBS@
+@WITH_KAFKA_TRUE@am__append_20 = @KAFKA_CFLAGS@
+@USING_SQL_TRUE@am__append_21 = sql_common.c sql_handlers.c sql_common.h
+@USING_SQL_TRUE@am__append_22 = -lm -lz
+@USING_THREADPOOL_TRUE@am__append_23 = thread_pool.c thread_pool.h
+@USING_TRAFFIC_BINS_TRUE@am__append_24 = pmacctd nfacctd sfacctd
+@USING_TRAFFIC_BINS_TRUE@am__append_25 = pmacct @EXTRABIN@
+@USING_TRAFFIC_BINS_TRUE@@WITH_NFLOG_TRUE@am__append_26 = uacctd
+@USING_ST_BINS_TRUE@am__append_27 = pmtelemetryd
+@USING_BGP_BINS_TRUE@am__append_28 = pmbgpd
+@USING_BMP_BINS_TRUE@am__append_29 = pmbmpd
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -105,7 +111,8 @@ libdaemons_la_DEPENDENCIES = nfprobe_plugin/libnfprobe_plugin.la \
 	telemetry/libtelemetry.la libcommon.la $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 am__libdaemons_la_SOURCES_DIST = signals.c util.c util.h \
 	plugin_hooks.c plugin_hooks.h server.c acct.c memory.c cfg.c \
 	cfg.h imt_plugin.c imt_plugin.h log.c log.h pkt_handlers.c \
@@ -118,12 +125,14 @@ am__libdaemons_la_SOURCES_DIST = signals.c util.c util.h \
 	regmagic.h regsub.c conntrack.c conntrack.h xflow_status.c \
 	xflow_status.h plugin_common.c plugin_common.h preprocess.c \
 	preprocess-data.h preprocess.h ll.c nl.c jhash.h pmacct-dlt.h \
-	sflow.h crc32.h base64.c base64.h mysql_plugin.c \
-	mysql_plugin.h pgsql_plugin.c pgsql_plugin.h mongodb_plugin.c \
-	mongodb_plugin.h sqlite3_plugin.c amqp_common.c amqp_common.h \
-	amqp_plugin.c amqp_plugin.h kafka_common.c kafka_common.h \
-	kafka_plugin.c kafka_plugin.h sql_common.c sql_handlers.c \
-	sql_common.h thread_pool.c thread_pool.h
+	sflow.h crc32.h base64.c base64.h plugin_cmn_json.c \
+	plugin_cmn_json.h plugin_cmn_avro.c plugin_cmn_avro.h \
+	mysql_plugin.c mysql_plugin.h pgsql_plugin.c pgsql_plugin.h \
+	mongodb_plugin.c mongodb_plugin.h sqlite3_plugin.c \
+	amqp_common.c amqp_common.h amqp_plugin.c amqp_plugin.h \
+	kafka_common.c kafka_common.h kafka_plugin.c kafka_plugin.h \
+	sql_common.c sql_handlers.c sql_common.h thread_pool.c \
+	thread_pool.h
 @WITH_MYSQL_TRUE@am__objects_1 = libdaemons_la-mysql_plugin.lo
 @WITH_PGSQL_TRUE@am__objects_2 = libdaemons_la-pgsql_plugin.lo
 @WITH_MONGODB_TRUE@am__objects_3 = libdaemons_la-mongodb_plugin.lo
@@ -151,51 +160,72 @@ am_libdaemons_la_OBJECTS = libdaemons_la-signals.lo \
 	libdaemons_la-conntrack.lo libdaemons_la-xflow_status.lo \
 	libdaemons_la-plugin_common.lo libdaemons_la-preprocess.lo \
 	libdaemons_la-ll.lo libdaemons_la-nl.lo \
-	libdaemons_la-base64.lo $(am__objects_1) $(am__objects_2) \
-	$(am__objects_3) $(am__objects_4) $(am__objects_5) \
-	$(am__objects_6) $(am__objects_7) $(am__objects_8)
+	libdaemons_la-base64.lo libdaemons_la-plugin_cmn_json.lo \
+	libdaemons_la-plugin_cmn_avro.lo $(am__objects_1) \
+	$(am__objects_2) $(am__objects_3) $(am__objects_4) \
+	$(am__objects_5) $(am__objects_6) $(am__objects_7) \
+	$(am__objects_8)
 libdaemons_la_OBJECTS = $(am_libdaemons_la_OBJECTS)
 libdaemons_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libdaemons_la_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+@USING_TRAFFIC_BINS_TRUE@am__EXEEXT_1 = pmacct$(EXEEXT) @EXTRABIN@
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(sbindir)"
-@WITH_NFLOG_TRUE@am__EXEEXT_1 = uacctd$(EXEEXT)
+@USING_TRAFFIC_BINS_TRUE@am__EXEEXT_2 = pmacctd$(EXEEXT) \
+@USING_TRAFFIC_BINS_TRUE@	nfacctd$(EXEEXT) sfacctd$(EXEEXT)
+@USING_TRAFFIC_BINS_TRUE@@WITH_NFLOG_TRUE@am__EXEEXT_3 =  \
+@USING_TRAFFIC_BINS_TRUE@@WITH_NFLOG_TRUE@	uacctd$(EXEEXT)
+@USING_ST_BINS_TRUE@am__EXEEXT_4 = pmtelemetryd$(EXEEXT)
+@USING_BGP_BINS_TRUE@am__EXEEXT_5 = pmbgpd$(EXEEXT)
+@USING_BMP_BINS_TRUE@am__EXEEXT_6 = pmbmpd$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS) $(sbin_PROGRAMS)
-am_nfacctd_OBJECTS = nfacctd.$(OBJEXT) nfv8_handlers.$(OBJEXT) \
-	nfv9_template.$(OBJEXT)
+am__nfacctd_SOURCES_DIST = nfacctd.c nfacctd.h nfv8_handlers.c \
+	nfv8_handlers.h nfv9_template.c
+@USING_TRAFFIC_BINS_TRUE@am_nfacctd_OBJECTS = nfacctd.$(OBJEXT) \
+@USING_TRAFFIC_BINS_TRUE@	nfv8_handlers.$(OBJEXT) \
+@USING_TRAFFIC_BINS_TRUE@	nfv9_template.$(OBJEXT)
 nfacctd_OBJECTS = $(am_nfacctd_OBJECTS)
-nfacctd_DEPENDENCIES = libdaemons.la
-am_pmacct_OBJECTS = pmacct.$(OBJEXT)
+@USING_TRAFFIC_BINS_TRUE@nfacctd_DEPENDENCIES = libdaemons.la
+am__pmacct_SOURCES_DIST = pmacct.c
+@USING_TRAFFIC_BINS_TRUE@am_pmacct_OBJECTS = pmacct.$(OBJEXT)
 pmacct_OBJECTS = $(am_pmacct_OBJECTS)
-pmacct_DEPENDENCIES = libcommon.la
-am_pmacctd_OBJECTS = pmacctd.$(OBJEXT)
+@USING_TRAFFIC_BINS_TRUE@pmacct_DEPENDENCIES = libcommon.la
+am__pmacctd_SOURCES_DIST = pmacctd.c
+@USING_TRAFFIC_BINS_TRUE@am_pmacctd_OBJECTS = pmacctd.$(OBJEXT)
 pmacctd_OBJECTS = $(am_pmacctd_OBJECTS)
-pmacctd_DEPENDENCIES = libdaemons.la
-am_pmbgpd_OBJECTS = pmbgpd.$(OBJEXT)
+@USING_TRAFFIC_BINS_TRUE@pmacctd_DEPENDENCIES = libdaemons.la
+am__pmbgpd_SOURCES_DIST = pmbgpd.c pmbgpd.h
+@USING_BGP_BINS_TRUE@am_pmbgpd_OBJECTS = pmbgpd.$(OBJEXT)
 pmbgpd_OBJECTS = $(am_pmbgpd_OBJECTS)
-pmbgpd_DEPENDENCIES = libdaemons.la
+@USING_BGP_BINS_TRUE@pmbgpd_DEPENDENCIES = libdaemons.la
 pmbgpd_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(pmbgpd_LDFLAGS) $(LDFLAGS) -o $@
-am_pmbmpd_OBJECTS = pmbmpd.$(OBJEXT)
+am__pmbmpd_SOURCES_DIST = pmbmpd.c pmbmpd.h
+@USING_BMP_BINS_TRUE@am_pmbmpd_OBJECTS = pmbmpd.$(OBJEXT)
 pmbmpd_OBJECTS = $(am_pmbmpd_OBJECTS)
-pmbmpd_DEPENDENCIES = libdaemons.la
+@USING_BMP_BINS_TRUE@pmbmpd_DEPENDENCIES = libdaemons.la
 pmbmpd_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(pmbmpd_LDFLAGS) $(LDFLAGS) -o $@
-am_pmtelemetryd_OBJECTS = pmtelemetryd.$(OBJEXT)
+am__pmtelemetryd_SOURCES_DIST = pmtelemetryd.c pmtelemetryd.h
+@USING_ST_BINS_TRUE@am_pmtelemetryd_OBJECTS = pmtelemetryd.$(OBJEXT)
 pmtelemetryd_OBJECTS = $(am_pmtelemetryd_OBJECTS)
-pmtelemetryd_DEPENDENCIES = libdaemons.la
+@USING_ST_BINS_TRUE@pmtelemetryd_DEPENDENCIES = libdaemons.la
 pmtelemetryd_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(pmtelemetryd_LDFLAGS) $(LDFLAGS) -o $@
-am_sfacctd_OBJECTS = sfacctd.$(OBJEXT) sfv5_module.$(OBJEXT)
+am__sfacctd_SOURCES_DIST = sfacctd.c sflow.c sfacctd.h sfv5_module.c \
+	sfv5_module.h
+@USING_TRAFFIC_BINS_TRUE@am_sfacctd_OBJECTS = sfacctd.$(OBJEXT) \
+@USING_TRAFFIC_BINS_TRUE@	sflow.$(OBJEXT) sfv5_module.$(OBJEXT)
 sfacctd_OBJECTS = $(am_sfacctd_OBJECTS)
-sfacctd_DEPENDENCIES = libdaemons.la
+@USING_TRAFFIC_BINS_TRUE@sfacctd_DEPENDENCIES = libdaemons.la
 am__uacctd_SOURCES_DIST = uacctd.c uacctd.h
-@WITH_NFLOG_TRUE@am_uacctd_OBJECTS = uacctd-uacctd.$(OBJEXT)
+@USING_TRAFFIC_BINS_TRUE@@WITH_NFLOG_TRUE@am_uacctd_OBJECTS = uacctd-uacctd.$(OBJEXT)
 uacctd_OBJECTS = $(am_uacctd_OBJECTS)
-@WITH_NFLOG_TRUE@uacctd_DEPENDENCIES = libdaemons.la
+@USING_TRAFFIC_BINS_TRUE@@WITH_NFLOG_TRUE@uacctd_DEPENDENCIES =  \
+@USING_TRAFFIC_BINS_TRUE@@WITH_NFLOG_TRUE@	libdaemons.la
 uacctd_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(uacctd_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -230,9 +260,10 @@ SOURCES = $(libcommon_la_SOURCES) $(libdaemons_la_SOURCES) \
 	$(pmbgpd_SOURCES) $(pmbmpd_SOURCES) $(pmtelemetryd_SOURCES) \
 	$(sfacctd_SOURCES) $(uacctd_SOURCES)
 DIST_SOURCES = $(libcommon_la_SOURCES) \
-	$(am__libdaemons_la_SOURCES_DIST) $(nfacctd_SOURCES) \
-	$(pmacct_SOURCES) $(pmacctd_SOURCES) $(pmbgpd_SOURCES) \
-	$(pmbmpd_SOURCES) $(pmtelemetryd_SOURCES) $(sfacctd_SOURCES) \
+	$(am__libdaemons_la_SOURCES_DIST) $(am__nfacctd_SOURCES_DIST) \
+	$(am__pmacct_SOURCES_DIST) $(am__pmacctd_SOURCES_DIST) \
+	$(am__pmbgpd_SOURCES_DIST) $(am__pmbmpd_SOURCES_DIST) \
+	$(am__pmtelemetryd_SOURCES_DIST) $(am__sfacctd_SOURCES_DIST) \
 	$(am__uacctd_SOURCES_DIST)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
@@ -442,40 +473,42 @@ libdaemons_la_SOURCES = signals.c util.c util.h plugin_hooks.c \
 	regmagic.h regsub.c conntrack.c conntrack.h xflow_status.c \
 	xflow_status.h plugin_common.c plugin_common.h preprocess.c \
 	preprocess-data.h preprocess.h ll.c nl.c jhash.h pmacct-dlt.h \
-	sflow.h crc32.h base64.c base64.h $(am__append_1) \
-	$(am__append_4) $(am__append_7) $(am__append_10) \
-	$(am__append_13) $(am__append_16) $(am__append_19) \
-	$(am__append_21)
+	sflow.h crc32.h base64.c base64.h plugin_cmn_json.c \
+	plugin_cmn_json.h plugin_cmn_avro.c plugin_cmn_avro.h \
+	$(am__append_1) $(am__append_4) $(am__append_7) \
+	$(am__append_10) $(am__append_15) $(am__append_18) \
+	$(am__append_21) $(am__append_23)
 # Builtin plugins
 libdaemons_la_LIBADD = nfprobe_plugin/libnfprobe_plugin.la \
 	sfprobe_plugin/libsfprobe_plugin.la bmp/libbmp.la \
 	bgp/libbgp.la tee_plugin/libtee_plugin.la isis/libisis.la \
 	telemetry/libtelemetry.la libcommon.la $(am__append_2) \
 	$(am__append_5) $(am__append_8) $(am__append_11) \
-	$(am__append_14) $(am__append_17) $(am__append_20)
+	$(am__append_13) $(am__append_16) $(am__append_19) \
+	$(am__append_22)
 libdaemons_la_CFLAGS = $(AM_CFLAGS) $(am__append_3) $(am__append_6) \
-	$(am__append_9) $(am__append_12) $(am__append_15) \
-	$(am__append_18)
-pmacctd_SOURCES = pmacctd.c
-pmacctd_LDADD = libdaemons.la
-nfacctd_SOURCES = nfacctd.c nfacctd.h nfv8_handlers.c nfv8_handlers.h nfv9_template.c
-nfacctd_LDADD = libdaemons.la
-sfacctd_SOURCES = sfacctd.c sfacctd.h sfv5_module.c sfv5_module.h
-sfacctd_LDADD = libdaemons.la
-@WITH_NFLOG_TRUE@uacctd_SOURCES = uacctd.c uacctd.h
-@WITH_NFLOG_TRUE@uacctd_CFLAGS = $(AM_CFLAGS) @NFLOG_CFLAGS@
-@WITH_NFLOG_TRUE@uacctd_LDADD = libdaemons.la @NFLOG_LIBS@
-pmacct_SOURCES = pmacct.c
-pmacct_LDADD = libcommon.la
-pmtelemetryd_SOURCES = pmtelemetryd.c pmtelemetryd.h
-pmtelemetryd_LDFLAGS = $(DEFS)
-pmtelemetryd_LDADD = libdaemons.la
-pmbgpd_SOURCES = pmbgpd.c pmbgpd.h
-pmbgpd_LDFLAGS = $(DEFS)
-pmbgpd_LDADD = libdaemons.la
-pmbmpd_SOURCES = pmbmpd.c pmbmpd.h
-pmbmpd_LDFLAGS = $(DEFS)
-pmbmpd_LDADD = libdaemons.la
+	$(am__append_9) $(am__append_12) $(am__append_14) \
+	$(am__append_17) $(am__append_20)
+@USING_TRAFFIC_BINS_TRUE@pmacctd_SOURCES = pmacctd.c
+@USING_TRAFFIC_BINS_TRUE@pmacctd_LDADD = libdaemons.la
+@USING_TRAFFIC_BINS_TRUE@nfacctd_SOURCES = nfacctd.c nfacctd.h nfv8_handlers.c nfv8_handlers.h nfv9_template.c
+@USING_TRAFFIC_BINS_TRUE@nfacctd_LDADD = libdaemons.la
+@USING_TRAFFIC_BINS_TRUE@sfacctd_SOURCES = sfacctd.c sflow.c sfacctd.h sfv5_module.c sfv5_module.h
+@USING_TRAFFIC_BINS_TRUE@sfacctd_LDADD = libdaemons.la
+@USING_TRAFFIC_BINS_TRUE@@WITH_NFLOG_TRUE@uacctd_SOURCES = uacctd.c uacctd.h
+@USING_TRAFFIC_BINS_TRUE@@WITH_NFLOG_TRUE@uacctd_CFLAGS = $(AM_CFLAGS) @NFLOG_CFLAGS@
+@USING_TRAFFIC_BINS_TRUE@@WITH_NFLOG_TRUE@uacctd_LDADD = libdaemons.la @NFLOG_LIBS@
+@USING_TRAFFIC_BINS_TRUE@pmacct_SOURCES = pmacct.c
+@USING_TRAFFIC_BINS_TRUE@pmacct_LDADD = libcommon.la
+@USING_ST_BINS_TRUE@pmtelemetryd_SOURCES = pmtelemetryd.c pmtelemetryd.h
+@USING_ST_BINS_TRUE@pmtelemetryd_LDFLAGS = $(DEFS)
+@USING_ST_BINS_TRUE@pmtelemetryd_LDADD = libdaemons.la
+@USING_BGP_BINS_TRUE@pmbgpd_SOURCES = pmbgpd.c pmbgpd.h
+@USING_BGP_BINS_TRUE@pmbgpd_LDFLAGS = $(DEFS)
+@USING_BGP_BINS_TRUE@pmbgpd_LDADD = libdaemons.la
+@USING_BMP_BINS_TRUE@pmbmpd_SOURCES = pmbmpd.c pmbmpd.h
+@USING_BMP_BINS_TRUE@pmbmpd_LDFLAGS = $(DEFS)
+@USING_BMP_BINS_TRUE@pmbmpd_LDADD = libdaemons.la
 all: all-recursive
 
 .SUFFIXES:
@@ -671,6 +704,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libdaemons_la-nl.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libdaemons_la-pgsql_plugin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libdaemons_la-pkt_handlers.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libdaemons_la-plugin_cmn_avro.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libdaemons_la-plugin_cmn_json.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libdaemons_la-plugin_common.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libdaemons_la-plugin_hooks.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libdaemons_la-ports_aggr.Plo@am__quote@
@@ -698,6 +733,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pmbmpd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pmtelemetryd.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sfacctd.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sflow.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sfv5_module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/strlcpy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/uacctd-uacctd.Po@am__quote@
@@ -932,6 +968,20 @@ libdaemons_la-base64.lo: base64.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='base64.c' object='libdaemons_la-base64.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdaemons_la_CFLAGS) $(CFLAGS) -c -o libdaemons_la-base64.lo `test -f 'base64.c' || echo '$(srcdir)/'`base64.c
+
+libdaemons_la-plugin_cmn_json.lo: plugin_cmn_json.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdaemons_la_CFLAGS) $(CFLAGS) -MT libdaemons_la-plugin_cmn_json.lo -MD -MP -MF $(DEPDIR)/libdaemons_la-plugin_cmn_json.Tpo -c -o libdaemons_la-plugin_cmn_json.lo `test -f 'plugin_cmn_json.c' || echo '$(srcdir)/'`plugin_cmn_json.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libdaemons_la-plugin_cmn_json.Tpo $(DEPDIR)/libdaemons_la-plugin_cmn_json.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='plugin_cmn_json.c' object='libdaemons_la-plugin_cmn_json.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdaemons_la_CFLAGS) $(CFLAGS) -c -o libdaemons_la-plugin_cmn_json.lo `test -f 'plugin_cmn_json.c' || echo '$(srcdir)/'`plugin_cmn_json.c
+
+libdaemons_la-plugin_cmn_avro.lo: plugin_cmn_avro.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdaemons_la_CFLAGS) $(CFLAGS) -MT libdaemons_la-plugin_cmn_avro.lo -MD -MP -MF $(DEPDIR)/libdaemons_la-plugin_cmn_avro.Tpo -c -o libdaemons_la-plugin_cmn_avro.lo `test -f 'plugin_cmn_avro.c' || echo '$(srcdir)/'`plugin_cmn_avro.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libdaemons_la-plugin_cmn_avro.Tpo $(DEPDIR)/libdaemons_la-plugin_cmn_avro.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='plugin_cmn_avro.c' object='libdaemons_la-plugin_cmn_avro.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdaemons_la_CFLAGS) $(CFLAGS) -c -o libdaemons_la-plugin_cmn_avro.lo `test -f 'plugin_cmn_avro.c' || echo '$(srcdir)/'`plugin_cmn_avro.c
 
 libdaemons_la-mysql_plugin.lo: mysql_plugin.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libdaemons_la_CFLAGS) $(CFLAGS) -MT libdaemons_la-mysql_plugin.lo -MD -MP -MF $(DEPDIR)/libdaemons_la-mysql_plugin.Tpo -c -o libdaemons_la-mysql_plugin.lo `test -f 'mysql_plugin.c' || echo '$(srcdir)/'`mysql_plugin.c
