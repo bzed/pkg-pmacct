@@ -22,7 +22,6 @@ override_dh_auto_configure:
 		--enable-rabbitmq     \
 		--enable-zmq          \
 		--enable-kafka        \
-		--enable-geoip        \
 		--enable-geoipv2      \
 		--enable-jansson      \
 		--enable-64bit        \
