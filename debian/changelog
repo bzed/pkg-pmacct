@@ -1,3 +1,13 @@
+pmacct (1.7.0-1) unstable; urgency=medium
+
+  * [09997b1] Updated version 1.7.0 from 'upstream/1.7.0'
+    with Debian dir 7687eb365838d66f3b109a1d516d0fdf991f05d1
+  * [8cc2d9a] Add new build-deps and configure flags
+  * [e14a802] Use libmaxminddb (geoip2)
+    Thanks to Faidon Liambotis (Closes: #863137)
+
+ -- Bernd Zeimetz <bzed@debian.org>  Sun, 22 Oct 2017 14:39:05 +0200
+
 pmacct (1.6.1-1) unstable; urgency=medium
 
   * [0497b6e] Merge tag 'upstream/1.6.1'
