@@ -40,6 +40,7 @@ EXT int PT_map_filter_handler(char *, struct id_entry *, char *, struct plugin_r
 EXT int PT_map_v8agg_handler(char *, struct id_entry *, char *, struct plugin_requests *, int);
 EXT int PT_map_agent_id_handler(char *, struct id_entry *, char *, struct plugin_requests *, int);
 EXT int PT_map_flowset_id_handler(char *, struct id_entry *, char *, struct plugin_requests *, int);
+EXT int PT_map_fwdstatus_handler(char *, struct id_entry *, char *, struct plugin_requests *, int);
 EXT int PT_map_sampling_rate_handler(char *, struct id_entry *, char *, struct plugin_requests *, int);
 EXT int PT_map_sample_type_handler(char *, struct id_entry *, char *, struct plugin_requests *, int);
 EXT int PT_map_direction_handler(char *, struct id_entry *, char *, struct plugin_requests *, int);
@@ -72,12 +73,14 @@ EXT int PT_map_index_entries_src_as_handler(struct id_entry *, pm_hash_serial_t 
 EXT int PT_map_index_entries_dst_as_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_entries_peer_src_as_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_entries_peer_dst_as_handler(struct id_entry *, pm_hash_serial_t *, void *); 
+EXT int PT_map_index_entries_mpls_vpn_id_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_entries_mpls_vpn_rd_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_entries_mpls_label_bottom_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_entries_src_mac_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_entries_dst_mac_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_entries_vlan_id_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_entries_cvlan_id_handler(struct id_entry *, pm_hash_serial_t *, void *); 
+EXT int PT_map_index_entries_fwdstatus_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_fdata_ip_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_fdata_input_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_fdata_output_handler(struct id_entry *, pm_hash_serial_t *, void *); 
@@ -86,12 +89,14 @@ EXT int PT_map_index_fdata_src_as_handler(struct id_entry *, pm_hash_serial_t *,
 EXT int PT_map_index_fdata_dst_as_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_fdata_peer_src_as_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_fdata_peer_dst_as_handler(struct id_entry *, pm_hash_serial_t *, void *); 
+EXT int PT_map_index_fdata_mpls_vpn_id_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_fdata_mpls_vpn_rd_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_fdata_mpls_label_bottom_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_fdata_src_mac_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_fdata_dst_mac_handler(struct id_entry *, pm_hash_serial_t *, void *); 
 EXT int PT_map_index_fdata_vlan_id_handler(struct id_entry *, pm_hash_serial_t *, void *);
 EXT int PT_map_index_fdata_cvlan_id_handler(struct id_entry *, pm_hash_serial_t *, void *);
+EXT int PT_map_index_fdata_fwdstatus_handler(struct id_entry *, pm_hash_serial_t *, void *);
 
 /* BPAS_*: bgp_peer_as_src map specific handlers */
 EXT int BPAS_map_bgp_nexthop_handler(char *, struct id_entry *, char *, struct plugin_requests *, int);
@@ -102,6 +107,7 @@ EXT int BTA_map_lookup_bgp_port_handler(char *, struct id_entry *, char *, struc
 
 /* BITR_*: flow_to_rd_map specific handlers */
 EXT int BITR_map_mpls_label_bottom_handler(char *, struct id_entry *, char *, struct plugin_requests *, int);
+EXT int BITR_map_mpls_vpn_id_handler(char *, struct id_entry *, char *, struct plugin_requests *, int);
 
 /* custom_primitives_*: aggregate_primitives specific handlers */
 EXT int custom_primitives_map_name_handler(char *, struct id_entry *, char *, struct plugin_requests *, int);
@@ -112,6 +118,7 @@ EXT int custom_primitives_map_semantics_handler(char *, struct id_entry *, char 
 EXT void custom_primitives_map_initialize();
 EXT void custom_primitives_map_validate(char *, struct plugin_requests *);
 
+EXT int pretag_dummy_ip_handler(struct packet_ptrs *, void *, void *);
 EXT int pretag_input_handler(struct packet_ptrs *, void *, void *);
 EXT int pretag_id_handler(struct packet_ptrs *, void *, void *);
 EXT int pretag_id2_handler(struct packet_ptrs *, void *, void *);
@@ -142,6 +149,7 @@ EXT int pretag_mpls_vpn_rd_handler(struct packet_ptrs *, void *, void *);
 EXT int pretag_src_mac_handler(struct packet_ptrs *, void *, void *);
 EXT int pretag_dst_mac_handler(struct packet_ptrs *, void *, void *);
 EXT int pretag_vlan_id_handler(struct packet_ptrs *, void *, void *);
+EXT int pretag_forwarding_status_handler(struct packet_ptrs *, void *, void *);
 EXT int pretag_cvlan_id_handler(struct packet_ptrs *, void *, void *);
 EXT int pretag_set_tos_handler(struct packet_ptrs *, void *, void *);
 
@@ -171,4 +179,5 @@ EXT int BPAS_bgp_peer_dst_as_handler(struct packet_ptrs *, void *, void *);
 EXT int BTA_lookup_bgp_port_handler(struct packet_ptrs *, void *, void *);
 
 EXT int BITR_mpls_label_bottom_handler(struct packet_ptrs *, void *, void *);
+EXT int BITR_mpls_vpn_id_handler(struct packet_ptrs *, void *, void *);
 #undef EXT

@@ -55,9 +55,10 @@ subdir = src/bgp
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ac_linearize_path.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/ax_lib_mysql.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -70,7 +71,7 @@ am_libbgp_la_OBJECTS = libbgp_la-bgp.lo libbgp_la-bgp_aspath.lo \
 	libbgp_la-bgp_hash.lo libbgp_la-bgp_prefix.lo \
 	libbgp_la-bgp_table.lo libbgp_la-bgp_logdump.lo \
 	libbgp_la-bgp_util.lo libbgp_la-bgp_msg.lo \
-	libbgp_la-bgp_lookup.lo
+	libbgp_la-bgp_lookup.lo libbgp_la-bgp_lcommunity.lo
 libbgp_la_OBJECTS = $(am_libbgp_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -173,6 +174,10 @@ MONGODB_LIBS = @MONGODB_LIBS@
 MYSQL_CFLAGS = @MYSQL_CFLAGS@
 MYSQL_CONFIG = @MYSQL_CONFIG@
 MYSQL_LIBS = @MYSQL_LIBS@
+MYSQL_VERSION = @MYSQL_VERSION@
+NDPI_CFLAGS = @NDPI_CFLAGS@
+NDPI_LIBS = @NDPI_LIBS@
+NDPI_LIBS_STATIC = @NDPI_LIBS_STATIC@
 NFLOG_CFLAGS = @NFLOG_CFLAGS@
 NFLOG_LIBS = @NFLOG_LIBS@
 NM = @NM@
@@ -205,6 +210,8 @@ SQLITE3_CFLAGS = @SQLITE3_CFLAGS@
 SQLITE3_LIBS = @SQLITE3_LIBS@
 STRIP = @STRIP@
 VERSION = @VERSION@
+ZMQ_CFLAGS = @ZMQ_CFLAGS@
+ZMQ_LIBS = @ZMQ_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -261,10 +268,11 @@ AM_CFLAGS = $(PMACCT_CFLAGS)
 noinst_LTLIBRARIES = libbgp.la
 libbgp_la_SOURCES = bgp.c bgp_aspath.c bgp_community.c			\
 	bgp_ecommunity.c bgp_hash.c bgp_prefix.c bgp_table.c		\
-	bgp_logdump.c bgp_util.c bgp_msg.c bgp_lookup.c bgp_aspath.h	\
-	bgp_community.h bgp_ecommunity.h bgp.h bgp_hash.h		\
-	bgp_logdump.h bgp_lookup.h bgp_msg.h bgp_packet.h		\
-	bgp_prefix.h bgp_table.h bgp_util.h
+	bgp_logdump.c bgp_util.c bgp_msg.c bgp_lookup.c			\
+	bgp_lcommunity.c bgp_aspath.h bgp_community.h			\
+	bgp_ecommunity.h bgp.h bgp_hash.h bgp_logdump.h			\
+	bgp_lookup.h bgp_msg.h bgp_packet.h bgp_prefix.h		\
+	bgp_table.h bgp_util.h bgp_lcommunity.h
 
 libbgp_la_CFLAGS = -I$(srcdir)/.. $(AM_CFLAGS)
 all: all-am
@@ -324,6 +332,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libbgp_la-bgp_community.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libbgp_la-bgp_ecommunity.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libbgp_la-bgp_hash.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libbgp_la-bgp_lcommunity.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libbgp_la-bgp_logdump.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libbgp_la-bgp_lookup.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libbgp_la-bgp_msg.Plo@am__quote@
@@ -428,6 +437,13 @@ libbgp_la-bgp_lookup.lo: bgp_lookup.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='bgp_lookup.c' object='libbgp_la-bgp_lookup.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libbgp_la_CFLAGS) $(CFLAGS) -c -o libbgp_la-bgp_lookup.lo `test -f 'bgp_lookup.c' || echo '$(srcdir)/'`bgp_lookup.c
+
+libbgp_la-bgp_lcommunity.lo: bgp_lcommunity.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libbgp_la_CFLAGS) $(CFLAGS) -MT libbgp_la-bgp_lcommunity.lo -MD -MP -MF $(DEPDIR)/libbgp_la-bgp_lcommunity.Tpo -c -o libbgp_la-bgp_lcommunity.lo `test -f 'bgp_lcommunity.c' || echo '$(srcdir)/'`bgp_lcommunity.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libbgp_la-bgp_lcommunity.Tpo $(DEPDIR)/libbgp_la-bgp_lcommunity.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='bgp_lcommunity.c' object='libbgp_la-bgp_lcommunity.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libbgp_la_CFLAGS) $(CFLAGS) -c -o libbgp_la-bgp_lcommunity.lo `test -f 'bgp_lcommunity.c' || echo '$(srcdir)/'`bgp_lcommunity.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

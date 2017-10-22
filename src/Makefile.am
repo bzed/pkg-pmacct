@@ -1,6 +1,6 @@
-SUBDIRS = nfprobe_plugin sfprobe_plugin bgp tee_plugin isis bmp telemetry
-sbin_PROGRAMS = pmacctd nfacctd sfacctd pmtelemetryd pmbgpd pmbmpd
-bin_PROGRAMS = pmacct @EXTRABIN@
+SUBDIRS = nfprobe_plugin sfprobe_plugin bgp tee_plugin isis bmp telemetry ndpi
+sbin_PROGRAMS =
+bin_PROGRAMS =
 EXTRA_PROGRAMS =
 
 AM_LDFLAGS = @GEOIP_LIBS@ @GEOIPV2_LIBS@ @JANSSON_LIBS@ @AVRO_LIBS@
@@ -21,7 +21,9 @@ libdaemons_la_SOURCES = signals.c util.c util.h plugin_hooks.c		\
         regmagic.h regsub.c conntrack.c conntrack.h xflow_status.c	\
         xflow_status.h plugin_common.c plugin_common.h preprocess.c	\
         preprocess-data.h preprocess.h ll.c nl.c jhash.h pmacct-dlt.h	\
-        sflow.h crc32.h base64.c base64.h
+        sflow.h crc32.h base64.c base64.h plugin_cmn_json.c		\
+	plugin_cmn_json.h plugin_cmn_avro.c plugin_cmn_avro.h		\
+	pmsearch.c pmsearch.h
 # Builtin plugins
 libdaemons_la_LIBADD  = nfprobe_plugin/libnfprobe_plugin.la
 libdaemons_la_LIBADD += sfprobe_plugin/libsfprobe_plugin.la
@@ -52,10 +54,24 @@ libdaemons_la_SOURCES += sqlite3_plugin.c sqlite3_plugin.c
 libdaemons_la_LIBADD  += @SQLITE3_LIBS@
 libdaemons_la_CFLAGS  += @SQLITE3_CFLAGS@
 endif
+if WITH_AVRO
+libdaemons_la_LIBADD  += @AVRO_LIBS@
+libdaemons_la_CFLAGS  += @AVRO_CFLAGS@
+endif
+if WITH_NDPI
+libdaemons_la_LIBADD += ndpi/libndpi_support.la
+libdaemons_la_LIBADD  += @NDPI_LIBS@
+libdaemons_la_CFLAGS  += @NDPI_CFLAGS@
+endif
 if WITH_RABBITMQ
 libdaemons_la_SOURCES += amqp_common.c amqp_common.h amqp_plugin.c amqp_plugin.h
 libdaemons_la_LIBADD  += @RABBITMQ_LIBS@
 libdaemons_la_CFLAGS  += @RABBITMQ_CFLAGS@
+endif
+if WITH_ZMQ
+libdaemons_la_SOURCES += zmq_common.c zmq_common.h
+libdaemons_la_LIBADD  += @ZMQ_LIBS@
+libdaemons_la_CFLAGS  += @ZMQ_CFLAGS@
 endif
 if WITH_KAFKA
 libdaemons_la_SOURCES += kafka_common.c kafka_common.h kafka_plugin.c kafka_plugin.h
@@ -70,26 +86,60 @@ if USING_THREADPOOL
 libdaemons_la_SOURCES += thread_pool.c thread_pool.h
 endif
 
+if USING_TRAFFIC_BINS
+sbin_PROGRAMS += pmacctd nfacctd sfacctd
+bin_PROGRAMS += pmacct @EXTRABIN@
 pmacctd_SOURCES = pmacctd.c
 pmacctd_LDADD = libdaemons.la
+if WITH_NDPI
+pmacctd_LDADD += @NDPI_LIBS_STATIC@
+endif
 nfacctd_SOURCES = nfacctd.c nfacctd.h nfv8_handlers.c nfv8_handlers.h nfv9_template.c
 nfacctd_LDADD = libdaemons.la
-sfacctd_SOURCES = sfacctd.c sfacctd.h sfv5_module.c sfv5_module.h
+if WITH_NDPI
+nfacctd_LDADD += @NDPI_LIBS_STATIC@
+endif
+sfacctd_SOURCES = sfacctd.c sflow.c sfacctd.h sfv5_module.c sfv5_module.h
 sfacctd_LDADD = libdaemons.la
+if WITH_NDPI
+sfacctd_LDADD += @NDPI_LIBS_STATIC@
+endif
 if WITH_NFLOG
 sbin_PROGRAMS += uacctd
 uacctd_SOURCES = uacctd.c uacctd.h
 uacctd_CFLAGS  = $(AM_CFLAGS) @NFLOG_CFLAGS@
 uacctd_LDADD   = libdaemons.la @NFLOG_LIBS@
+if WITH_NDPI
+uacctd_LDADD += @NDPI_LIBS_STATIC@
+endif
 endif
 pmacct_SOURCES = pmacct.c
 pmacct_LDADD = libcommon.la
+endif
+if USING_ST_BINS
+sbin_PROGRAMS += pmtelemetryd
 pmtelemetryd_SOURCES = pmtelemetryd.c pmtelemetryd.h
 pmtelemetryd_LDFLAGS = $(DEFS)
 pmtelemetryd_LDADD = libdaemons.la
+if WITH_NDPI
+pmtelemetryd_LDADD += @NDPI_LIBS_STATIC@
+endif
+endif
+if USING_BGP_BINS
+sbin_PROGRAMS += pmbgpd
 pmbgpd_SOURCES = pmbgpd.c pmbgpd.h
 pmbgpd_LDFLAGS = $(DEFS)
 pmbgpd_LDADD = libdaemons.la
+if WITH_NDPI
+pmbgpd_LDADD += @NDPI_LIBS_STATIC@
+endif
+endif
+if USING_BMP_BINS
+sbin_PROGRAMS += pmbmpd
 pmbmpd_SOURCES = pmbmpd.c pmbmpd.h
 pmbmpd_LDFLAGS = $(DEFS)
 pmbmpd_LDADD = libdaemons.la
+if WITH_NDPI
+pmbmpd_LDADD += @NDPI_LIBS_STATIC@
+endif
+endif

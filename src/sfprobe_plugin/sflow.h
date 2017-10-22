@@ -260,6 +260,14 @@ typedef struct _SFLExtended_classification {
   pm_class_t class;
 } SFLExtended_classification;
 
+typedef struct _SFLExtended_classification2 {
+#if defined (WITH_NDPI)
+  pm_class2_t id;
+#else
+  u_int64_t id;
+#endif
+} SFLExtended_classification2;
+
 typedef struct _SFLExtended_tag {
   pm_id_t tag;
   pm_id_t tag2;
@@ -283,9 +291,10 @@ enum SFLFlow_type_tag {
   SFLFLOW_EX_MPLS_FTN     = 1010,
   SFLFLOW_EX_MPLS_LDP_FEC = 1011,
   SFLFLOW_EX_VLAN_TUNNEL  = 1012,   /* VLAN stack */
-  /* enterprise = 8800 pmacct */
-  SFLFLOW_EX_CLASS        = (8800 << 12) + 1,
-  SFLFLOW_EX_TAG	  = (8800 << 12) + 2,
+  /* enterprise = 43874 pmacct */
+  SFLFLOW_EX_CLASS        = (43874 << 12) + 1,
+  SFLFLOW_EX_TAG	  = (43874 << 12) + 2,
+  SFLFLOW_EX_CLASS2       = (43874 << 12) + 3,
 };
 
 typedef union _SFLFlow_type {
@@ -306,6 +315,7 @@ typedef union _SFLFlow_type {
   SFLExtended_mpls_LDP_FEC mpls_ldp_fec;
   SFLExtended_vlan_tunnel vlan_tunnel;
   SFLExtended_classification class;
+  SFLExtended_classification2 ndpi_class;
   SFLExtended_tag tag;
 } SFLFlow_type;
 

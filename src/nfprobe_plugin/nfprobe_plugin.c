@@ -1,6 +1,6 @@
 /*
     pmacct (Promiscuous mode IP Accounting package)
-    pmacct is Copyright (C) 2003-2016 by Paolo Lucente
+    pmacct is Copyright (C) 2003-2017 by Paolo Lucente
 */
 
 /*
@@ -51,6 +51,7 @@
  */
 
 #include "common.h"
+#include "addr.h"
 #include "sys-tree.h"
 #include "convtime.h"
 #include "../nfacctd.h"
@@ -454,6 +455,9 @@ ipv4_to_flowrec(struct FLOW *flow, struct primitives_ptrs *prim_ptrs, int *isfra
   flow->packets[ndx] = data->pkt_num;
   flow->flows[ndx] = data->flo_num;
   flow->class = p->class;
+#if defined (WITH_NDPI)
+  memcpy(&flow->ndpi_class, &p->ndpi_class, sizeof(pm_class2_t));
+#endif
   flow->tag[ndx] = p->tag;
   flow->tag2[ndx] = p->tag2;
 
@@ -517,6 +521,9 @@ ipv6_to_flowrec(struct FLOW *flow, struct primitives_ptrs *prim_ptrs, int *isfra
   flow->packets[ndx] = data->pkt_num; 
   flow->flows[ndx] = data->flo_num;
   flow->class = p->class;
+#if defined (WITH_NDPI)
+  memcpy(&flow->ndpi_class, &p->ndpi_class, sizeof(pm_class2_t));
+#endif
   flow->tag[ndx] = p->tag;
   flow->tag2[ndx] = p->tag2;
 
@@ -755,6 +762,10 @@ process_packet(struct FLOWTRACK *ft, struct primitives_ptrs *prim_ptrs, const st
 #endif
     }
     if (!flow->class) flow->class = tmp.class;
+#if defined (WITH_NDPI)
+    if (!flow->ndpi_class.app_protocol)
+      memcpy(&flow->ndpi_class, &tmp.ndpi_class, sizeof(pm_class2_t));
+#endif
     if (!flow->tag[0]) flow->tag[0] = tmp.tag[0];
     if (!flow->tag[1]) flow->tag[1] = tmp.tag[1];
     if (!flow->tag2[0]) flow->tag2[0] = tmp.tag2[0];
@@ -975,6 +986,11 @@ check_expired(struct FLOWTRACK *ft, struct NETFLOW_TARGET *target, int ex, u_int
 		if (target != NULL) {
 			if (target->fd == -1) {
 			  Log(LOG_WARNING, "WARN ( %s/%s ): No connection to collector, discarding flows\n", config.name, config.type);
+			  for (i = 0; i < num_expired; i++) {
+				  free_flow_allocs(expired_flows[i]);
+				  free(expired_flows[i]);
+			  }
+			  free(expired_flows);
 			  return -1;
                         }
 			else {
@@ -1373,7 +1389,7 @@ void nfprobe_plugin(int pipe_fd, struct configuration *cfgptr, void *ptr)
   struct timezone tz;
   unsigned char *pipebuf;
   time_t now, refresh_deadline;
-  int refresh_timeout, amqp_timeout, kafka_timeout, ret, num;
+  int refresh_timeout, ret, num;
   char default_receiver[] = "127.0.0.1:2100";
   char default_engine[] = "0:0";
   struct ring *rg = &((struct channels_list_entry *)ptr)->rg;
@@ -1400,14 +1416,9 @@ void nfprobe_plugin(int pipe_fd, struct configuration *cfgptr, void *ptr)
 
   struct extra_primitives extras;
   struct primitives_ptrs prim_ptrs;
-  void *kafka_msg;
 
-#ifdef WITH_RABBITMQ
-  struct p_amqp_host *amqp_host = &((struct channels_list_entry *)ptr)->amqp_host;
-#endif
-
-#ifdef WITH_KAFKA
-  struct p_kafka_host *kafka_host = &((struct channels_list_entry *)ptr)->kafka_host;
+#ifdef WITH_ZMQ
+  struct p_zmq_host *zmq_host = &((struct channels_list_entry *)ptr)->zmq_host;
 #endif
 
   memcpy(&config, cfgptr, sizeof(struct configuration));
@@ -1517,18 +1528,14 @@ sort_version:
   pipebuf = (unsigned char *) pm_malloc(config.buffer_size);
   memset(pipebuf, 0, config.buffer_size);
 
-  if (config.pipe_amqp) {
-    plugin_pipe_amqp_compile_check();
-#ifdef WITH_RABBITMQ
-    pipe_fd = plugin_pipe_amqp_connect_to_consume(amqp_host, plugin_data);
-    amqp_timeout = plugin_pipe_set_retry_timeout(&amqp_host->btimers, pipe_fd);
-#endif
-  }
-  else if (config.pipe_kafka) {
-    plugin_pipe_kafka_compile_check();
-#ifdef WITH_KAFKA
-    pipe_fd = plugin_pipe_kafka_connect_to_consume(kafka_host, plugin_data);
-    kafka_timeout = plugin_pipe_set_retry_timeout(&kafka_host->btimers, pipe_fd);
+  if (config.pipe_zmq) {
+    plugin_pipe_zmq_compile_check();
+#ifdef WITH_ZMQ
+    p_zmq_plugin_pipe_init_plugin(zmq_host);
+    p_zmq_plugin_pipe_consume(zmq_host);
+    p_zmq_set_retry_timeout(zmq_host, config.pipe_zmq_retry);
+    pipe_fd = p_zmq_get_fd(zmq_host);
+    seq = 0;
 #endif
   }
   else setnonblocking(pipe_fd);
@@ -1552,24 +1559,21 @@ sort_version:
   }
 
   for(;;) {
-poll_again:
     status->wakeup = TRUE;
 
     pfd.fd = pipe_fd;
     pfd.events = POLLIN;
 
-    if (config.pipe_homegrown || config.pipe_amqp) {
-      timeout = MIN(refresh_timeout, (amqp_timeout ? amqp_timeout : INT_MAX));
-      ret = poll(&pfd, (pfd.fd == ERR ? 0 : 1), timeout);
-    }
-#ifdef WITH_KAFKA
-    else if (config.pipe_kafka) {
-      timeout = MIN(refresh_timeout, (kafka_timeout ? kafka_timeout : INT_MAX));
-      ret = p_kafka_consume_poller(kafka_host, &kafka_msg, timeout);
-    }
-#endif
+    ret = poll(&pfd, (pfd.fd == ERR ? 0 : 1), refresh_timeout);
 
-    if (ret < 0) goto poll_again;
+    /* Flags set by signal handlers or control socket */
+    if (graceful_shutdown_request) {
+      Log(LOG_WARNING, "WARN ( %s/%s ): Shutting down on user request.\n", config.name, config.type);
+      check_expired(&flowtrack, &target, CE_EXPIRE_ALL, engine_type, engine_id);
+      goto exit_lane;
+    }
+
+    if (ret < 0) continue;
 
     /* Fatal error from per-packet functions */
     if (cb_ctxt.fatal) {
@@ -1584,26 +1588,6 @@ poll_again:
     }
 
     now = time(NULL);
-
-#ifdef WITH_RABBITMQ
-    if (config.pipe_amqp && pipe_fd == ERR) {
-      if (timeout == amqp_timeout) {
-        pipe_fd = plugin_pipe_amqp_connect_to_consume(amqp_host, plugin_data);
-        amqp_timeout = plugin_pipe_set_retry_timeout(&amqp_host->btimers, pipe_fd);
-      }
-      else amqp_timeout = plugin_pipe_calc_retry_timeout_diff(&amqp_host->btimers, now);
-    }
-#endif
-
-#ifdef WITH_KAFKA
-    if (config.pipe_kafka && pipe_fd == ERR) {
-      if (timeout == kafka_timeout) {
-        pipe_fd = plugin_pipe_kafka_connect_to_consume(kafka_host, plugin_data);
-        kafka_timeout = plugin_pipe_set_retry_timeout(&kafka_host->btimers, pipe_fd);
-      }
-      else kafka_timeout = plugin_pipe_calc_retry_timeout_diff(&kafka_host->btimers, now);
-    }
-#endif
 
     if (ret > 0) { /* we received data */
 read_data:
@@ -1643,22 +1627,18 @@ read_data:
         memcpy(pipebuf, rg->ptr, bufsz);
         rg->ptr += bufsz;
       }
-#ifdef WITH_RABBITMQ
-      else if (config.pipe_amqp) {
-        ret = p_amqp_consume_binary(amqp_host, pipebuf, config.buffer_size);
-        if (ret) pipe_fd = ERR;
+#ifdef WITH_ZMQ
+      else if (config.pipe_zmq) {
+	ret = p_zmq_plugin_pipe_recv(zmq_host, pipebuf, config.buffer_size);
+	if (ret > 0) {
+	  if (seq && (((struct ch_buf_hdr *)pipebuf)->seq != ((seq + 1) % MAX_SEQNUM))) {
+	    Log(LOG_WARNING, "WARN ( %s/%s ): Missing data detected. Sequence received=%u expected=%u\n",
+		config.name, config.type, ((struct ch_buf_hdr *)pipebuf)->seq, ((seq + 1) % MAX_SEQNUM));
+	  }
 
-        seq = ((struct ch_buf_hdr *)pipebuf)->seq;
-        amqp_timeout = plugin_pipe_set_retry_timeout(&amqp_host->btimers, pipe_fd);
-      }
-#endif
-#ifdef WITH_KAFKA
-      else if (config.pipe_kafka) {
-        ret = p_kafka_consume_data(kafka_host, kafka_msg, pipebuf, config.buffer_size);
-        if (ret) pipe_fd = ERR;
-
-        seq = ((struct ch_buf_hdr *)pipebuf)->seq;
-        kafka_timeout = plugin_pipe_set_retry_timeout(&kafka_host->btimers, pipe_fd);
+	  seq = ((struct ch_buf_hdr *)pipebuf)->seq;
+	}
+	else goto handle_flow_expiration;
       }
 #endif
 
@@ -1702,7 +1682,7 @@ read_data:
       }
       }
 
-      if (config.pipe_homegrown) goto read_data;
+      goto read_data;
     }
 
 handle_flow_expiration:
@@ -1741,13 +1721,6 @@ expiry_check:
 	force_expire(&flowtrack, flowtrack.num_flows - max_flows);
 	goto expiry_check;
       }
-    }
-    
-    /* Flags set by signal handlers or control socket */
-    if (graceful_shutdown_request) {
-      Log(LOG_WARNING, "WARN ( %s/%s ): Shutting down on user request.\n", config.name, config.type);
-      check_expired(&flowtrack, &target, CE_EXPIRE_ALL, engine_type, engine_id);
-      goto exit_lane;
     }
   }
 		
