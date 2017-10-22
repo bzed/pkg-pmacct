@@ -1,6 +1,6 @@
 /*  
     pmacct (Promiscuous mode IP Accounting package)
-    pmacct is Copyright (C) 2003-2016 by Paolo Lucente
+    pmacct is Copyright (C) 2003-2017 by Paolo Lucente
 */
 
 /*
@@ -31,7 +31,8 @@
 EXT int bgp_afi2family(int);
 EXT int bgp_rd2str(char *, rd_t *);
 EXT int bgp_str2rd(rd_t *, char *);
-EXT void load_comm_patterns(char **, char **, char **);
+EXT int bgp_label2str(char *, u_char *);
+EXT void load_comm_patterns(char **, char **, char **, char **);
 EXT void load_peer_src_as_comm_ranges(char *, char *);
 EXT void evaluate_comm_patterns(char *, char *, char **, int);
 EXT as_t evaluate_last_asn(struct aspath *);
@@ -40,14 +41,19 @@ EXT void evaluate_bgp_aspath_radius(char *, int, int);
 EXT void copy_stdcomm_to_asn(char *, as_t *, int);
 EXT void write_neighbors_file(char *, int);
 EXT struct bgp_rt_structs *bgp_select_routing_db(int);
-EXT void process_bgp_md5_file(int, struct bgp_md5_table *);
+EXT void bgp_md5_file_init(struct bgp_md5_table *);
+EXT void bgp_md5_file_load(char *, struct bgp_md5_table *);
+EXT void bgp_md5_file_unload(struct bgp_md5_table *);
+EXT void bgp_md5_file_process(int, struct bgp_md5_table *);
 EXT void bgp_config_checks(struct configuration *);
 EXT struct bgp_misc_structs *bgp_select_misc_db(int);
 EXT void bgp_link_misc_structs(struct bgp_misc_structs *);
 
 EXT struct bgp_info_extra *bgp_info_extra_new(struct bgp_info *);
-EXT void bgp_info_extra_free(struct bgp_info_extra **);
+EXT void bgp_info_extra_free(struct bgp_peer *, struct bgp_info_extra **);
 EXT struct bgp_info_extra *bgp_info_extra_get(struct bgp_info *);
+EXT struct bgp_info_extra *bgp_info_extra_process(struct bgp_peer *, struct bgp_info *, safi_t, path_id_t *, rd_t *, char *);
+
 EXT struct bgp_info *bgp_info_new(struct bgp_peer *);
 EXT void bgp_info_add(struct bgp_peer *, struct bgp_node *, struct bgp_info *, u_int32_t);
 EXT void bgp_info_delete(struct bgp_peer *, struct bgp_node *, struct bgp_info *, u_int32_t);
@@ -59,8 +65,8 @@ EXT void *bgp_attr_hash_alloc (void *);
 EXT int bgp_attr_munge_as4path(struct bgp_peer *, struct bgp_attr *, struct aspath *);
 
 EXT int bgp_peer_init(struct bgp_peer *, int);
-EXT void bgp_peer_close(struct bgp_peer *, int);
-EXT char *bgp_peer_print(struct bgp_peer *);
+EXT void bgp_peer_close(struct bgp_peer *, int, int, int, u_int8_t, u_int8_t, char *);
+EXT void bgp_peer_print(struct bgp_peer *, char *, int);
 EXT void bgp_peer_info_delete(struct bgp_peer *);
 
 EXT void bgp_batch_init(struct bgp_peer_batch *, int, int);
@@ -72,6 +78,12 @@ EXT int bgp_batch_is_not_empty(struct bgp_peer_batch *);
 EXT void bgp_batch_increase_counter(struct bgp_peer_batch *);
 EXT void bgp_batch_decrease_counter(struct bgp_peer_batch *);
 EXT void bgp_batch_rollback(struct bgp_peer_batch *);
+
+EXT int bgp_peer_cmp(const void *, const void *);
+EXT int bgp_peer_host_addr_cmp(const void *, const void *);
+EXT void bgp_peer_free(void *);
+EXT int bgp_peers_bintree_walk_print(const void *, const pm_VISIT, const int, void *);
+EXT int bgp_peers_bintree_walk_delete(const void *, const pm_VISIT, const int, void *);
 
 EXT unsigned int attrhash_key_make(void *);
 EXT int attrhash_cmp(const void *, const void *);

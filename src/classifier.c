@@ -1,6 +1,6 @@
 /*
     pmacct (Promiscuous mode IP Accounting package)
-    pmacct is Copyright (C) 2003-2016 by Paolo Lucente
+    pmacct is Copyright (C) 2003-2017 by Paolo Lucente
 */
 
 /*
@@ -219,7 +219,7 @@ void init_class_accumulators(struct packet_ptrs *pptrs, struct ip_flow_common *f
 
 void handle_class_accumulators(struct packet_ptrs *pptrs, struct ip_flow_common *fp, unsigned int idx)
 {
-  struct my_iphdr *iphp = (struct my_iphdr *)pptrs->iph_ptr; 
+  struct pm_iphdr *iphp = (struct pm_iphdr *)pptrs->iph_ptr; 
 #if defined ENABLE_IPV6
   struct ip6_hdr *ip6hp = (struct ip6_hdr *)pptrs->iph_ptr; 
 #endif
@@ -236,10 +236,16 @@ void handle_class_accumulators(struct packet_ptrs *pptrs, struct ip_flow_common 
       else if (pptrs->l3_proto == ETHERTYPE_IPV6)
 	fp->cst[idx].ba += (IP6HdrSz+ntohs(ip6hp->ip6_plen));
 #endif
+      if (pptrs->frag_sum_bytes) {
+	fp->cst[idx].ba += pptrs->frag_sum_bytes;
+	pptrs->frag_sum_bytes = 0;
+      }
+
       if (pptrs->new_flow) fp->cst[idx].fa++;
-      if (pptrs->pf) {
-	fp->cst[idx].pa += pptrs->pf;
-	pptrs->pf = 0;
+
+      if (pptrs->frag_sum_pkts) {
+	fp->cst[idx].pa += pptrs->frag_sum_pkts;
+	pptrs->frag_sum_pkts = 0;
       }
       fp->cst[idx].pa++;
       if (pptrs->payload_ptr) fp->cst[idx].tentatives--;
@@ -463,55 +469,6 @@ int parse_shared_object(char *fname, struct pkt_classifier *css)
 #endif
 }
 
-int pm_scandir(const char *dir, struct dirent ***namelist,
-            int (*select)(const struct dirent *),
-            int (*compar)(const void *, const void *))
-{
-  DIR *d;
-  struct dirent *entry;
-  register int i = 0;
-  size_t entrysize;
-
-  if ((d=opendir(dir)) == NULL) return(-1);
-
-  *namelist = NULL;
-  while ((entry=readdir(d)) != NULL)
-  {
-    if (select == NULL || (select != NULL && (*select)(entry)))
-    {
-      *namelist=(struct dirent **)realloc((void *)(*namelist), (size_t)((i+1)*sizeof(struct dirent *)));
-      if (*namelist == NULL)
-      {
-         closedir(d);
-         return(-1);
-      }
-      entrysize=sizeof(struct dirent)-sizeof(entry->d_name)+strlen(entry->d_name)+1;
-      (*namelist)[i]=(struct dirent *)malloc(entrysize);
-      if ((*namelist)[i] == NULL)
-      {
-        closedir(d);
-        return(-1);
-      }
-      memcpy((*namelist)[i], entry, entrysize);
-      i++;
-    }
-  }
-  if (closedir(d)) return(-1);
-  if (i == 0) return(-1);
-  if (compar != NULL)
-    qsort((void *)(*namelist), (size_t)i, sizeof(struct dirent *), compar);
-    
-  return(i);
-}
-
-int pm_alphasort(const void *a, const void *b)
-{
-  const struct dirent *dira = a;
-  const struct dirent *dirb = b;
-
-  return(strcmp(dira->d_name, dirb->d_name));
-}
-
 void link_conntrack_helper(struct pkt_classifier *css)
 {
   int index = 0;
@@ -625,6 +582,26 @@ pm_class_t pmct_register(struct pkt_classifier *css)
     memcpy(&class[css->id-1], css, sizeof(struct pkt_classifier));
     return css->id;
   } 
+  else return 0;
+}
+
+/* same as pmct_register but without the index decrement */
+pm_class_t pmct_ndpi_register(struct pkt_classifier *css)
+{
+  int max = pmct_get_num_entries();
+
+  if (!css) return 0;
+
+  /* let's check that a) a valid class ID has been supplied, b) the class ID
+     is still available. If this is the case, let's proceed with this entry,
+     otherwise we will switch to a default behaviour. */
+
+  if (!strcmp(css->protocol, "")) return 0;
+
+  if (css->id <= max && !class[css->id].id) {
+    memcpy(&class[css->id], css, sizeof(struct pkt_classifier));
+    return css->id;
+  }
   else return 0;
 }
 

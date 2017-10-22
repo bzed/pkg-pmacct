@@ -1,6 +1,6 @@
 /*
     pmacct (Promiscuous mode IP Accounting package)
-    pmacct is Copyright (C) 2003-2016 by Paolo Lucente
+    pmacct is Copyright (C) 2003-2017 by Paolo Lucente
 */
 
 /*
@@ -68,6 +68,7 @@ Inline void RetireElem(struct db_cache *Cursor)
   if (Cursor->pbgp) free(Cursor->pbgp);
   if (Cursor->pnat) free(Cursor->pnat);
   if (Cursor->pmpls) free(Cursor->pmpls);
+  if (Cursor->ptun) free(Cursor->ptun);
   if (Cursor->pcust) free(Cursor->pcust);
   if (Cursor->pvlen) free(Cursor->pvlen);
   if (Cursor->stitch) free(Cursor->stitch);
@@ -213,7 +214,7 @@ Inline void SQL_SetENV()
 
     strncat(envbuf.ptr, "SQL_MAX_WRITERS=", envbuf.end-envbuf.ptr);
     tmpptr = envbuf.ptr + strlen(envbuf.ptr);
-    snprintf(tmpptr, envbuf.end-tmpptr, "%d", config.sql_max_writers);
+    snprintf(tmpptr, envbuf.end-tmpptr, "%d", dump_writers_get_max());
     ptrs[count] = envbuf.ptr;
     envbuf.ptr += strlen(envbuf.ptr)+1;
     count++;
@@ -325,7 +326,7 @@ Inline void SQL_SetENV_child(const struct insert_data *idata)
 
     strncat(envbuf.ptr, "SQL_ACTIVE_WRITERS=", envbuf.end-envbuf.ptr);
     tmpptr = envbuf.ptr + strlen(envbuf.ptr);
-    snprintf(tmpptr, envbuf.end-tmpptr, "%d", sql_writers.active);
+    snprintf(tmpptr, envbuf.end-tmpptr, "%d", dump_writers_get_active());
     ptrs[count] = envbuf.ptr;
     envbuf.ptr += strlen(envbuf.ptr)+1;
     count++;
